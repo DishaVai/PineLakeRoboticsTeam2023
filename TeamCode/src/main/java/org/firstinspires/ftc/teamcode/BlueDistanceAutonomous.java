@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "blue-far-auto")
-public class BlueDistanceTest extends LinearOpMode{
+public class BlueDistanceAutonomous extends LinearOpMode{
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
     private DcMotor leftFrontDrive = null;
     private DcMotor leftBackDrive = null;
@@ -36,7 +36,6 @@ public class BlueDistanceTest extends LinearOpMode{
      * The variable to store our instance of the vision portal.
      */
 
-    @Autonomous(name="blue-far-auto")
     public void runOpMode() {
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
