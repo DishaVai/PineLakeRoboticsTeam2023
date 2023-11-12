@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-@TeleOp(name="TeleOp")
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+@TeleOp(name="JustDrivetrain")
 public class Drivetrain extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -8,6 +12,13 @@ public class Drivetrain extends LinearOpMode {
     private DcMotor leftBackDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
+    double leftFrontPower;
+    double leftBackPower;
+    double rightFrontPower;
+    double rightBackPower;
+    double axial;
+    double lateral;
+    double yaw;
     //private DcMotor linearSlide1;
 
     @Override
@@ -39,26 +50,39 @@ public class Drivetrain extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        runtime.reset();
+        boolean isReversed = false;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double max;
-            boolean isReversed = false;
-            double axial   = gamepad1.left_stick_y * 0.75;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x * 0.75;
-            double yaw     =  -gamepad1.right_stick_x * 0.65;
-
-            double leftFrontPower  = axial + lateral + yaw;
-            double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower   = axial - lateral + yaw;
-            double rightBackPower  = axial + lateral - yaw;
+            // double axial   = -gamepad1.left_stick_y * 0.75;  // Note: pushing stick forward gives negative value
+            // double lateral =  gamepad1.left_stick_x * 0.75;
+            // double yaw     =  gamepad1.right_stick_x * 0.65;
             if(isReversed) {
-                leftFrontPower = -leftFrontPower;
-                leftBackPower = -leftBackPower;
-                rightFrontPower = -rightFrontPower;
-                rightBackPower = -rightBackPower;
+                axial = gamepad1.left_stick_y * 0.75;
+                lateral = -gamepad1.left_stick_x * 0.75;
+                yaw = gamepad1.right_stick_x * 0.65;
+            }else {
+                axial = -gamepad1.left_stick_y * 0.75;
+                lateral = gamepad1.left_stick_x * 0.75;
+                yaw = gamepad1.right_stick_x * 0.65;
             }
+            // if(isReversed) {
+            //     leftFrontPower = -(axial + lateral + yaw);
+            //     leftBackPower = -(axial - lateral - yaw);
+            //     rightFrontPower = -(axial - lateral + yaw);
+            //     rightBackPower = -(axial + lateral - yaw);
+            // }else {
+            //     leftFrontPower  = axial + lateral + yaw;
+            //     rightFrontPower = axial - lateral - yaw;
+            //     leftBackPower   = axial - lateral + yaw;
+            //     rightBackPower  = axial + lateral - yaw;
+            // }
+
+            leftFrontPower  = axial + lateral + yaw;
+            rightFrontPower = axial - lateral - yaw;
+            leftBackPower   = axial - lateral + yaw;
+            rightBackPower  = axial + lateral - yaw;
 
             max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
             max = Math.max(max, Math.abs(leftBackPower));
@@ -78,9 +102,9 @@ public class Drivetrain extends LinearOpMode {
 
             if (gamepad1.dpad_down) {
                 isReversed = !isReversed;
+                telemetry.addData("reversed!", isReversed);
             }
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("Front left wheel", leftFrontDrive.getCurrentPosition());

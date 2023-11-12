@@ -1,7 +1,10 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
@@ -9,9 +12,12 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.teamcode.autonomous.Movement;
 
-@Autonomous(name = "blue-far-auto")
-public class BlueDistanceTest extends LinearOpMode{
+@Autonomous(name = "blue-far-auto-test")
+public class ModularizedBlueFarAutonomous extends LinearOpMode{
+
+
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
     private DcMotor leftFrontDrive = null;
     private DcMotor leftBackDrive = null;
@@ -27,6 +33,7 @@ public class BlueDistanceTest extends LinearOpMode{
     // double Ki = 0.0150;
     // double Kd = 0.000001;
     ElapsedTime timer = new ElapsedTime();
+    Movement move = new Movement();
 
     /**
      * The variable to store our instance of the TensorFlow Object Detection processor.
@@ -35,8 +42,6 @@ public class BlueDistanceTest extends LinearOpMode{
     /**
      * The variable to store our instance of the vision portal.
      */
-
-    @Autonomous(name="blue-far-auto")
     public void runOpMode() {
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
@@ -70,7 +75,7 @@ public class BlueDistanceTest extends LinearOpMode{
             while (opModeIsActive()) {
                 moveForwardToThree();
                 resetPower();
-                strafeLeft();
+                move.strafeLeft( leftFrontDrive, rightFrontDrive, rightBackDrive, leftBackDrive );
                 telemetry.addData("leftfront", leftFrontDrive.getCurrentPosition());
                 telemetry.addData("rightfront", rightFrontDrive.getCurrentPosition());
                 telemetry.addData("leftback", leftBackDrive.getCurrentPosition());
@@ -80,35 +85,17 @@ public class BlueDistanceTest extends LinearOpMode{
             }}}
     public void moveToPosition(double reference, DcMotor motor) {
         while (motor.getCurrentPosition() != reference) {
-            double power = PIDControl(reference, reference, motor);
+            double power = move.PIDControl(reference, reference, motor);
             motor.setPower(power);
         }
     }
-    public double PIDControl(double reference, double lastError, DcMotor motor) {
-        double state = motor.getCurrentPosition();
-        double error = reference - state;
-        if(error < 100 && error > -100) {
-            error = 0;
-        }
-        integralSum += error * timer.seconds();
-        double derivative = (error-lastError) / timer.seconds();
 
-        lastError = error;
-
-        timer.reset();
-
-        double out = (error*Kp) + (derivative * Kd) + (integralSum * Ki);
-        telemetry.addData("out", out);
-        telemetry.addData("position", state);
-        telemetry.update();
-        return out;
-    }
     public void moveForwardToThree() {
         int variance = 100;
         int desiredLoc = -1700;
         while(leftFrontDrive.getCurrentPosition() > desiredLoc + variance
                 || leftFrontDrive.getCurrentPosition() < desiredLoc - variance) {
-            double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
+            double power = move.PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
             leftFrontDrive.setPower(power * 0.5);
             rightFrontDrive.setPower(-power * 0.5);
             leftBackDrive.setPower(power * 0.5);
@@ -122,26 +109,13 @@ public class BlueDistanceTest extends LinearOpMode{
         leftBackDrive.setPower(0);
         rightBackDrive.setPower(0);
     }
-    public void strafeLeft() {
-        int desiredLoc = 2000;
-        int variance = -25;
-        while(leftFrontDrive.getCurrentPosition() > desiredLoc - variance
-                || leftFrontDrive.getCurrentPosition() < desiredLoc + variance
-        ) {
-            double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
-            leftFrontDrive.setPower(power);
-            rightFrontDrive.setPower(power);
-            rightBackDrive.setPower(-power);
-            leftBackDrive.setPower(-power);
-        }
-    }
 
     public void turnLeft() {
         int variance = 25;
         int desiredLoc = -1350;
         while(leftFrontDrive.getCurrentPosition() < desiredLoc - variance
                 || leftFrontDrive.getCurrentPosition() > desiredLoc + variance) {
-            double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
+            double power = move.PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
             leftFrontDrive.setPower(power);
             leftBackDrive.setPower(power);
             rightBackDrive.setPower(power);
