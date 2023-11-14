@@ -9,8 +9,8 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-@Autonomous(name = "blue-far-auto")
+//Out of date, use modularized version.
+@Autonomous(name = "blue-far-auto-old")
 public class BlueDistanceAutonomous extends LinearOpMode{
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
     private DcMotor leftFrontDrive = null;
@@ -35,7 +35,6 @@ public class BlueDistanceAutonomous extends LinearOpMode{
     /**
      * The variable to store our instance of the vision portal.
      */
-
     public void runOpMode() {
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
         leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
@@ -66,17 +65,19 @@ public class BlueDistanceAutonomous extends LinearOpMode{
         waitForStart();
 
         if (opModeIsActive()) {
-            while (opModeIsActive()) {
-                moveForwardToThree();
-                resetPower();
-                strafeLeft();
-                telemetry.addData("leftfront", leftFrontDrive.getCurrentPosition());
-                telemetry.addData("rightfront", rightFrontDrive.getCurrentPosition());
-                telemetry.addData("leftback", leftBackDrive.getCurrentPosition());
-                telemetry.addData("rightback", rightBackDrive.getCurrentPosition());
-                //telemetry.addData("linearslide", linearSlide.getCurrentPosition());
-                telemetry.update();
-            }}}
+            moveForwardToThree();
+            //resetPower();
+            strafeLeft();
+            resetPower();
+            sleep(4000);
+            //turnLeft();
+            telemetry.addData("leftfront", leftFrontDrive.getCurrentPosition());
+            telemetry.addData("rightfront", rightFrontDrive.getCurrentPosition());
+            telemetry.addData("leftback", leftBackDrive.getCurrentPosition());
+            telemetry.addData("rightback", rightBackDrive.getCurrentPosition());
+            //telemetry.addData("linearslide", linearSlide.getCurrentPosition());
+            telemetry.update();
+        }}
     public void moveToPosition(double reference, DcMotor motor) {
         while (motor.getCurrentPosition() != reference) {
             double power = PIDControl(reference, reference, motor);
@@ -104,7 +105,7 @@ public class BlueDistanceAutonomous extends LinearOpMode{
     }
     public void moveForwardToThree() {
         int variance = 100;
-        int desiredLoc = -1700;
+        int desiredLoc = -1900;
         while(leftFrontDrive.getCurrentPosition() > desiredLoc + variance
                 || leftFrontDrive.getCurrentPosition() < desiredLoc - variance) {
             double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
@@ -122,7 +123,7 @@ public class BlueDistanceAutonomous extends LinearOpMode{
         rightBackDrive.setPower(0);
     }
     public void strafeLeft() {
-        int desiredLoc = 2000;
+        int desiredLoc = 3450;
         int variance = -25;
         while(leftFrontDrive.getCurrentPosition() > desiredLoc - variance
                 || leftFrontDrive.getCurrentPosition() < desiredLoc + variance
@@ -137,12 +138,12 @@ public class BlueDistanceAutonomous extends LinearOpMode{
 
     public void turnLeft() {
         int variance = 25;
-        int desiredLoc = -1350;
+        int desiredLoc = -500;
         while(leftFrontDrive.getCurrentPosition() < desiredLoc - variance
                 || leftFrontDrive.getCurrentPosition() > desiredLoc + variance) {
             double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
-            leftFrontDrive.setPower(power);
-            leftBackDrive.setPower(power);
+            leftFrontDrive.setPower(0.5 * power);
+            leftBackDrive.setPower(0.5 * power);
             rightBackDrive.setPower(power);
             rightFrontDrive.setPower(power);
         }
