@@ -2,11 +2,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import org.firstinspires.ftc.teamcode.autonomous.Movement;
 
-//Blue far position parking code using PID controller
 @Autonomous(name = "blue-far-auto")
-public class ModularizedBlueFarAutonomous extends LinearOpMode{
+public class BlueFarAuto extends LinearOpMode{
     public void runOpMode() {
         Movement move = new Movement();
         move.initialize(hardwareMap);
@@ -22,7 +22,10 @@ public class ModularizedBlueFarAutonomous extends LinearOpMode{
         if (opModeIsActive()) {
             move.moveForwardToThree(-1900, 100);
             move.resetPower();
-            move.strafeLeft(3450, 25);
+            move.strafe(3550, 25);
+            //As the robot goes through the gate, any linear slides will smash into the
+            //gate, most likely breaking it. Using a lower power will prevent this.
+            //move.strafeLeft(2000,-25);
         }
     }
 }

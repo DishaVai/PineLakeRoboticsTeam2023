@@ -6,17 +6,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class Movement{
+public class Movement extends LinearOpMode{
     DcMotor leftFrontDrive;
     DcMotor rightFrontDrive;
     DcMotor rightBackDrive;
     DcMotor leftBackDrive;
+    DcMotor linearSlide;
+    CRServo tray;
 
     double integralSum = 0;
     double Kp = 0.1;
@@ -32,34 +30,27 @@ public class Movement{
         leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        tray = hardwareMap.crservo.get("outputservo");
+        linearSlide = hardwareMap.get(DcMotor.class, "outputslide");
 
         leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        linearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
+        linearSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
 
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
-
-    public void strafeLeft(int desiredLoc, int variance) {
-        while(leftFrontDrive.getCurrentPosition() > desiredLoc - variance
-                || leftFrontDrive.getCurrentPosition() < desiredLoc + variance
-        ) {
-            double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
-            leftFrontDrive.setPower(power);
-            rightFrontDrive.setPower(power);
-            rightBackDrive.setPower(-power);
-            leftBackDrive.setPower(-power);
-        }
+        linearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public double PIDControl(double reference, double lastError, DcMotor motor) {
         double state = motor.getCurrentPosition();
@@ -77,32 +68,66 @@ public class Movement{
         double out = (error*Kp) + (derivative * Kd) + (integralSum * Ki);
         return out;
     }
+    // tuned power
+    public void strafe(int reference, int variance) {
+        while(leftFrontDrive.getCurrentPosition() > reference - variance
+                || leftFrontDrive.getCurrentPosition() < reference + variance
+        ) {
+            double power = PIDControl(reference, reference, leftFrontDrive);
+            leftFrontDrive.setPower(power);
+            rightFrontDrive.setPower(power);
+            rightBackDrive.setPower(-power);
+            leftBackDrive.setPower(-power);
+        }
+    }
+    //manual power version
+    public void strafe(int reference, int variance, double power) {
+        while(leftFrontDrive.getCurrentPosition() > reference - variance
+                || leftFrontDrive.getCurrentPosition() < reference + variance) {
+            leftFrontDrive.setPower(power);
+            rightFrontDrive.setPower(power);
+            rightBackDrive.setPower(-power);
+            leftBackDrive.setPower(-power);
+        }
+    }
 
-    public void moveForwardToThree(int desiredLoc, int variance) {
-        while(leftFrontDrive.getCurrentPosition() > desiredLoc + variance
-                || leftFrontDrive.getCurrentPosition() < desiredLoc - variance) {
-            double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
+    public void moveForwardToThree(int reference, int variance) {
+        while(leftFrontDrive.getCurrentPosition() > reference + variance
+                || leftFrontDrive.getCurrentPosition() < reference - variance) {
+            double power = PIDControl(reference, reference, leftFrontDrive);
             leftFrontDrive.setPower(power * 0.5);
             rightFrontDrive.setPower(-power * 0.5);
             leftBackDrive.setPower(power * 0.5);
             rightBackDrive.setPower(-power * 0.5);
         }
     }
-    public void left(int desiredLoc, int variance) {
-        while(leftFrontDrive.getCurrentPosition() < desiredLoc - variance
-                || leftFrontDrive.getCurrentPosition() > desiredLoc + variance) {
-            double power = PIDControl(desiredLoc, desiredLoc, leftFrontDrive);
+    public void left(int reference, int variance) {
+        while(leftFrontDrive.getCurrentPosition() < reference - variance
+                || leftFrontDrive.getCurrentPosition() > reference + variance) {
+            double power = PIDControl(reference, reference, leftFrontDrive);
             leftFrontDrive.setPower(0.5 * power);
             leftBackDrive.setPower(0.5 * power);
             rightBackDrive.setPower(power);
             rightFrontDrive.setPower(power);
         }
     }
+    public void scoreOnBoard(int reference, int variance) {
+        while(linearSlide.getCurrentPosition() < reference - variance
+                || linearSlide.getCurrentPosition() > reference + variance) {
+            double power = PIDControl (reference, reference, linearSlide);
+            linearSlide.setPower(power);
+        }
+        tray.setPower(0.5);
+        sleep(500);
+    }
     public void resetPower() {
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
         leftBackDrive.setPower(0);
         rightBackDrive.setPower(0);
+        linearSlide.setPower(0);
+    }
+    public void runOpMode() {
     }
 
 }
