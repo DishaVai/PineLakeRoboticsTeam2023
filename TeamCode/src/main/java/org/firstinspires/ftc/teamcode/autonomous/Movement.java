@@ -52,7 +52,7 @@ public class Movement extends LinearOpMode{
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         linearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    public double PIDControl(double reference, double lastError, DcMotor motor) {
+    private double PIDControl(double reference, double lastError, DcMotor motor) {
         double state = motor.getCurrentPosition();
         double error = reference - state;
         if(error < 100 && error > -100) {
@@ -78,6 +78,14 @@ public class Movement extends LinearOpMode{
             rightFrontDrive.setPower(power);
             rightBackDrive.setPower(-power);
             leftBackDrive.setPower(-power);
+            if(leftFrontDrive.getCurrentPosition() >= reference - (variance+1)
+                    && leftFrontDrive.getCurrentPosition() <= reference + (variance+1)) {
+                leftFrontDrive.setPower(0);
+                rightFrontDrive.setPower(0);
+                rightBackDrive.setPower(0);
+                leftBackDrive.setPower(0);
+                break;
+            }
         }
     }
     //manual power version
@@ -111,14 +119,21 @@ public class Movement extends LinearOpMode{
             rightFrontDrive.setPower(power);
         }
     }
-    public void scoreOnBoard(int reference, int variance) {
+    public void scoreOnBoard(int reference, int variance, Telemetry telemetry) {
+
         while(linearSlide.getCurrentPosition() < reference - variance
                 || linearSlide.getCurrentPosition() > reference + variance) {
             double power = PIDControl (reference, reference, linearSlide);
             linearSlide.setPower(power);
+            telemetry.addData("position: ", linearSlide.getCurrentPosition());
+            telemetry.update();
         }
-        tray.setPower(0.5);
+        telemetry.addData("finished looping", "a");
+        telemetry.update();
+        linearSlide.setPower(0);
+        tray.setPower(-0.5);
         sleep(500);
+        tray.setPower(0);
     }
     public void resetPower() {
         leftFrontDrive.setPower(0);
