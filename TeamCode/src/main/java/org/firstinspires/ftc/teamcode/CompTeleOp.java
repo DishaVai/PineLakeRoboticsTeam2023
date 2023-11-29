@@ -65,8 +65,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="TeleOp")
 public class CompTeleOp extends LinearOpMode {
-
-    // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftFrontDrive = null;
     private DcMotor leftBackDrive = null;
@@ -76,7 +74,6 @@ public class CompTeleOp extends LinearOpMode {
     private DcMotor Intake = null;
     private CRServo servo = null;
     private CRServo airplane = null;
-    //private DcMotor linearSlide1;
     double leftFrontPower;
     double leftBackPower;
     double rightFrontPower;
@@ -97,7 +94,6 @@ public class CompTeleOp extends LinearOpMode {
         servo = hardwareMap.crservo.get("outputservo");
         airplane = hardwareMap.crservo.get("airplane");
 
-        //linearSlide1 = hardwareMap.get(DcMotor.class, "linear_slide_1");
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
@@ -121,14 +117,10 @@ public class CompTeleOp extends LinearOpMode {
 
         boolean isReversed = false;
 
-        // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double max;
             double linearPower = 0.5;
 
-            // double axial   = -gamepad1.left_stick_y * 0.75;  // Note: pushing stick forward gives negative value
-            // double lateral =  gamepad1.left_stick_x * 0.75;
-            // double yaw     =  gamepad1.right_stick_x * 0.65;
             if(isReversed) {
                 axial = gamepad1.left_stick_y * 0.75;
                 lateral = -gamepad1.left_stick_x * 0.75;
@@ -138,24 +130,10 @@ public class CompTeleOp extends LinearOpMode {
                 lateral = gamepad1.left_stick_x * 0.75;
                 yaw = gamepad1.right_stick_x * 0.65;
             }
-            // }if(isReversed) {
-            //     // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            //     axial   = -axial;  // Note: pushing stick forward gives negative value
-            //     lateral =  -lateral;
-            //     yaw     =  -yaw;
-
-            // }
-
-            // Combine the joystick requests for each axis-motion to determine each wheel's power.
-            // Set up a variable for each drive wheel to save the power level for telemetry.
-            leftFrontPower  = axial + lateral + yaw;
             rightFrontPower = axial - lateral - yaw;
             leftBackPower   = axial - lateral + yaw;
             rightBackPower  = axial + lateral - yaw;
-            //next task: make field oriented driving
 
-            // Normalize the values so no wheel power exceeds 100%
-            // This ensures that the robot maintains the desired motion.
             max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
             max = Math.max(max, Math.abs(leftBackPower));
             max = Math.max(max, Math.abs(rightBackPower));
@@ -166,29 +144,6 @@ public class CompTeleOp extends LinearOpMode {
                 leftBackPower   /= max;
                 rightBackPower  /= max;
             }
-
-            // This is test code:
-            //
-            // Uncomment the following code to test your motor directions.
-            // Each button should make the corresponding motor run FORWARD.
-            //   1) First get all the motors to take to correct positions on the robot
-            //      by adjusting your Robot Configuration if necessary.
-            //   2) Then make sure they run in the correct direction by modifying the
-            //      the setDirection() calls above.
-            // Once the correct motors move in the correct direction re-comment this code.
-
-            /*
-            leftFrontPower  = gamepad1.x ? 1.0 : 0.0;  // X gamepad
-            leftBackPower   = gamepad1.a ? 1.0 : 0.0;  // A gamepad
-            rightFrontPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
-            rightBackPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
-            */
-            // rightBack
-            //leftBack
-            //rightFront
-            //leftFront
-
-            // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
@@ -232,11 +187,4 @@ public class CompTeleOp extends LinearOpMode {
             telemetry.update();
         }
     }
-    /*public void moveToPosition(double reference) {
-        while (linearSlide.getCurrentPosition() != reference) {
-            double power = PIDControl(reference, linearSlide.getCurrentPosition());
-            linearSlide.setPower(power);
-        }
-    }*/
-//}
 }
