@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.teamcode.autonomous.Movement;
 
-@Autonomous(name = "blue-close-score")
-public class BlueCloseScoring extends LinearOpMode{
+@Autonomous(name = "red-close-score")
+public class RedCloseScoring extends LinearOpMode{
     private CRServo tray;
     public void runOpMode() {
         Movement move = new Movement();
@@ -22,10 +22,10 @@ public class BlueCloseScoring extends LinearOpMode{
 
 
         if (opModeIsActive()) {
-            move.strafe(1500, 50);
-            move.moveForwardToThree(700, 50);
-            move.left(2000, 50);
-            move.moveForwardToThree(1600, 50);
+            move.strafe(-1500, 50);
+            move.moveForwardToThree(-2200, 50);
+            move.left(-3500, 50);
+            //move.moveForwardToThree(-3800, 50);
             tray.setPower(0.25);
             sleep(500);
             tray.setPower(0);

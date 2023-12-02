@@ -135,6 +135,19 @@ public class Movement extends LinearOpMode{
         sleep(500);
         tray.setPower(0);
     }
+    public void retract(int reference, int variance, Telemetry telemetry) {
+        reference = -reference;
+        tray.setPower(-0.5);
+        sleep(500);
+        tray.setPower(0);
+        while(linearSlide.getCurrentPosition() < reference - variance
+                || linearSlide.getCurrentPosition() > reference + variance) {
+            double power = PIDControl (reference, reference, linearSlide);
+            linearSlide.setPower(power);
+            telemetry.addData("position: ", linearSlide.getCurrentPosition());
+            telemetry.update();
+        }
+    }
     public void resetPower() {
         leftFrontDrive.setPower(0);
         rightFrontDrive.setPower(0);
