@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -26,35 +27,62 @@ public class AutonomousOrchestrator extends LinearOpMode{
     private VisualControl visualControl;
     private LinearSlide linearSlide;
     private Tray tray;
+    private DriveTrain drivetrain;
+    boolean finished = false;
+    double DESIRED_DISTANCE = 9.3;
+    boolean reachedDistance = false;
+    boolean firstTurn = false;
+    double rangeError;
+    double headingError;
+    double yawError;
 
     public void orchestrate() {
-        tray.rotateUp(1500);
-        sleep(2000);
-        linearSlide.extendSlide(2500, 100);
-        sleep(2000);
-        linearSlide.retractSlide(2500, 100);
-        sleep(2000);
-        tray.rotateDown(1500);
-        // visualControl.setManualExposure(6, 250);
-        // AprilTagDetection aprilTag = visualControl.detectAprilTag();
-        // if(aprilTag != null) {
-        //     telemetry.addData(aprilTag.id + "", " hi");
-        //     telemetry.update();
-        // }else{
-        //     telemetry.addData("not ", "found");
-        //     telemetry.update();
-        // }
-
-
-    }
-
-    public void runOpMode() {
-        linearSlide = new LinearSlide(hardwareMap, telemetry);
-        visualControl = new VisualControl(hardwareMap, telemetry);
-        tray = new Tray(hardwareMap, telemetry);
-        waitForStart();
+        visualControl.setManualExposure(6, 250);
         while(opModeIsActive()) {
-            orchestrate();
+            if(!firstTurn) {
+                drivetrain.moveForward(600, 100);
+                drivetrain.turnLeft(150, 50);
+                firstTurn = true;
+            }
+            AprilTagDetection aprilTag = visualControl.detectAprilTag();
+
+            if(aprilTag != null && !reachedDistance) {
+                if(aprilTag.id == 1) {
+                    rangeError = (aprilTag.ftcPose.range - DESIRED_DISTANCE);
+                    headingError = aprilTag.ftcPose.bearing;
+                    yawError = aprilTag.ftcPose.yaw;
+                    if(rangeError >= 3) {
+                        drivetrain.move(rangeError, headingError,yawError);
+                    }
+                    if(rangeError <= 4) {
+                        reachedDistance = true;
+                    }
+                    //sleep(10000);
+                }
+                // drivetrain.moveForward(500, 50);
+            }else if(aprilTag != null && aprilTag.id == 1){
+                reachedDistance = true;
+                tray.rotateUp(1000);
+                sleep(1000);
+                linearSlide.extendSlide(2450, 100);
+                tray.rotateDown(1000);
+                sleep(700);
+                linearSlide.extendSlide(2600, 100);
+                //drivetrain.moveForward(-100, 70);
+                tray.rotateDown(1000);
+                sleep(1000);
+                tray.rotateUp(1000);
+                sleep(1000);
+                linearSlide.retractSlide(-100, 100);
+                break;
+            }
         }
+    }
+    public void runOpMode() {
+        visualControl = new VisualControl(hardwareMap, telemetry);
+        linearSlide = new LinearSlide(hardwareMap, telemetry);
+        tray = new Tray(hardwareMap, telemetry);
+        drivetrain = new DriveTrain(hardwareMap, telemetry);
+        orchestrate();
     }
 }
