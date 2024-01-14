@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 
 @Autonomous(name="autoRed")
-public class AutonomousOrchestrator extends LinearOpMode{
+public class AutoOrchestrator2 extends LinearOpMode{
 
     private VisualControl visualControl;
     private LinearSlide linearSlide;
@@ -35,20 +35,19 @@ public class AutonomousOrchestrator extends LinearOpMode{
     double rangeError;
     double headingError;
     double yawError;
-    int desiredId = 1;
 
     public void orchestrate() {
         visualControl.setManualExposure(6, 250);
         while(opModeIsActive()) {
             if(!firstTurn) {
                 drivetrain.moveForward(600, 100);
-                drivetrain.turnLeft(260, 50);
+                drivetrain.turnRight(1600, 50);
                 firstTurn = true;
             }
             AprilTagDetection aprilTag = visualControl.detectAprilTag();
 
             if(aprilTag != null && !reachedDistance) {
-                if(aprilTag.id == desiredId) {
+                if(aprilTag.id == 4) {
                     rangeError = (aprilTag.ftcPose.range - DESIRED_DISTANCE);
                     headingError = aprilTag.ftcPose.bearing;
                     yawError = aprilTag.ftcPose.yaw;
@@ -61,7 +60,7 @@ public class AutonomousOrchestrator extends LinearOpMode{
                     //sleep(10000);
                 }
                 // drivetrain.moveForward(500, 50);
-            }else if(aprilTag != null && aprilTag.id == desiredId){
+            }else if(aprilTag != null && aprilTag.id == 4){
                 reachedDistance = true;
                 tray.rotateUp(1000);
                 sleep(1000);
@@ -80,7 +79,7 @@ public class AutonomousOrchestrator extends LinearOpMode{
         }
     }
     public void runOpMode() {
-        visualControl = new VisualControl(hardwareMap, telemetry, desiredId);
+        visualControl = new VisualControl(hardwareMap, telemetry, 4);
         linearSlide = new LinearSlide(hardwareMap, telemetry);
         tray = new Tray(hardwareMap, telemetry);
         drivetrain = new DriveTrain(hardwareMap, telemetry);
