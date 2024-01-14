@@ -24,14 +24,15 @@ public class VisualControl extends LinearOpMode{
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
 
-    private static final int DESIRED_TAG_ID = 1;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private int DESIRED_TAG_ID;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;
 
-    public VisualControl(HardwareMap hardwareMap, Telemetry telemetry) {
+    public VisualControl(HardwareMap hardwareMap, Telemetry telemetry, int DESIRED_TAG_ID) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+        this.DESIRED_TAG_ID = DESIRED_TAG_ID;
         initialize(hardwareMap,telemetry);
     }
 
@@ -99,7 +100,7 @@ public class VisualControl extends LinearOpMode{
                     // Yes, we want to use this tag.
                     targetFound = true;
                     desiredTag = detection;
-                    break;  // don't look any further.
+                    return desiredTag;  // don't look any further.
                 } else {
                     // This tag is in the library, but we do not want to track it right now.
                     telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
